@@ -1,0 +1,16 @@
+__pycache__/
+*.py[cod]
+*.egg-info/
+.eggs/
+.venv/
+venv/
+env/
+.env
+*.sqlite3
+staticfiles/
+media/
+.DS_Store
+.idea/
+.vscode/
+*.log
+celerybeat-schedule
