@@ -26,6 +26,8 @@ INSTALLED_APPS = [
     "apps.core",
     "apps.identity",
     "apps.subscriptions",
+    "apps.learning_content",
+    "apps.content_authoring",
 ]
 
 MIDDLEWARE = [
