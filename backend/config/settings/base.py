@@ -28,6 +28,7 @@ INSTALLED_APPS = [
     "apps.subscriptions",
     "apps.learning_content",
     "apps.content_authoring",
+    "apps.execution",
 ]
 
 MIDDLEWARE = [
@@ -118,7 +119,16 @@ VERIFICATION_MAX_ATTEMPTS = env.int("VERIFICATION_MAX_ATTEMPTS", default=5)
 PAYMENT_WEBHOOK_SECRET = env("PAYMENT_WEBHOOK_SECRET", default="insecure-webhook-secret-for-local-dev-only")
 SUBSCRIPTION_GRACE_PERIOD_DAYS = env.int("SUBSCRIPTION_GRACE_PERIOD_DAYS", default=7)
 
-# --- Redis / Celery foundation (Phase 6 ADR-4) — no tasks defined yet ---
+# --- Secure Code Execution (Phase 9 §7 provisional values, Phase 6 §7.H) ---
+EXECUTION_PYTHON_BINARY = env("EXECUTION_PYTHON_BINARY", default="python3")
+EXECUTION_TIMEOUT_SECONDS = env.int("EXECUTION_TIMEOUT_SECONDS", default=10)
+EXECUTION_CPU_SECONDS = env.int("EXECUTION_CPU_SECONDS", default=10)
+EXECUTION_MEMORY_LIMIT_BYTES = env.int("EXECUTION_MEMORY_LIMIT_BYTES", default=128 * 1024 * 1024)
+EXECUTION_PIDS_LIMIT = env.int("EXECUTION_PIDS_LIMIT", default=32)
+EXECUTION_OUTPUT_LIMIT_BYTES = env.int("EXECUTION_OUTPUT_LIMIT_BYTES", default=64 * 1024)
+EXECUTION_MAX_CONCURRENT_PER_USER = env.int("EXECUTION_MAX_CONCURRENT_PER_USER", default=2)
+
+# --- Redis / Celery (Phase 6 ADR-4) ---
 REDIS_URL = env("REDIS_URL", default="redis://localhost:6379/0")
 CELERY_BROKER_URL = REDIS_URL
 CELERY_RESULT_BACKEND = REDIS_URL
