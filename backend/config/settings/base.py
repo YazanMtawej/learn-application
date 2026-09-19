@@ -25,6 +25,7 @@ INSTALLED_APPS = [
     "rest_framework",
     "apps.core",
     "apps.identity",
+    "apps.subscriptions",
 ]
 
 MIDDLEWARE = [
@@ -111,7 +112,11 @@ VERIFICATION_CODE_LENGTH = env.int("VERIFICATION_CODE_LENGTH", default=6)
 VERIFICATION_CODE_LIFETIME_MINUTES = env.int("VERIFICATION_CODE_LIFETIME_MINUTES", default=15)
 VERIFICATION_MAX_ATTEMPTS = env.int("VERIFICATION_MAX_ATTEMPTS", default=5)
 
-# --- Redis / Celery foundation (Phase 6 ADR-4) — no tasks defined in TASK 1 ---
+# --- Subscriptions / Payments (Phase 7 §4.9, Phase 1 §16 OD-03) ---
+PAYMENT_WEBHOOK_SECRET = env("PAYMENT_WEBHOOK_SECRET", default="insecure-webhook-secret-for-local-dev-only")
+SUBSCRIPTION_GRACE_PERIOD_DAYS = env.int("SUBSCRIPTION_GRACE_PERIOD_DAYS", default=7)
+
+# --- Redis / Celery foundation (Phase 6 ADR-4) — no tasks defined yet ---
 REDIS_URL = env("REDIS_URL", default="redis://localhost:6379/0")
 CELERY_BROKER_URL = REDIS_URL
 CELERY_RESULT_BACKEND = REDIS_URL
