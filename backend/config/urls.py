@@ -10,4 +10,5 @@ urlpatterns = [
     path("api/v1/webhooks/payment", PaymentWebhookView.as_view(), name="payment_webhook"),
     path("api/v1/content/", include("apps.content_authoring.urls", namespace="content_authoring")),
     path("api/v1/", include("apps.execution.urls", namespace="execution")),
+    path("api/v1/knowledge/", include("apps.knowledge.urls", namespace="knowledge")),
 ]

@@ -29,6 +29,7 @@ INSTALLED_APPS = [
     "apps.learning_content",
     "apps.content_authoring",
     "apps.execution",
+    "apps.knowledge",
 ]
 
 MIDDLEWARE = [
@@ -127,6 +128,18 @@ EXECUTION_MEMORY_LIMIT_BYTES = env.int("EXECUTION_MEMORY_LIMIT_BYTES", default=1
 EXECUTION_PIDS_LIMIT = env.int("EXECUTION_PIDS_LIMIT", default=32)
 EXECUTION_OUTPUT_LIMIT_BYTES = env.int("EXECUTION_OUTPUT_LIMIT_BYTES", default=64 * 1024)
 EXECUTION_MAX_CONCURRENT_PER_USER = env.int("EXECUTION_MAX_CONCURRENT_PER_USER", default=2)
+
+# --- Knowledge & Mastery (Phase 15 — ALL values below are ENGINEERING
+# DECISIONS, provisional pending P15-D3/D6/D7 calibration. None are
+# presented as final product/business decisions; centralized here so
+# recalibration requires no code change. See TASK 5 Implementation Map. ---
+MASTERY_ALGORITHM_VERSION = env("MASTERY_ALGORITHM_VERSION", default="rule-based-window-v1")
+MASTERY_WINDOW_SIZE = env.int("MASTERY_WINDOW_SIZE", default=8)  # Phase 15 §12 example range: 5-10
+MASTERY_MIN_EVIDENCE_FOR_SUFFICIENCY = env.int("MASTERY_MIN_EVIDENCE_FOR_SUFFICIENCY", default=3)
+MASTERY_MIN_CORRECTNESS_FOR_PROFICIENT = env.float("MASTERY_MIN_CORRECTNESS_FOR_PROFICIENT", default=0.6)
+MASTERY_MIN_CORRECTNESS_FOR_MASTERED = env.float("MASTERY_MIN_CORRECTNESS_FOR_MASTERED", default=0.85)
+MASTERY_MIN_STRONG_RATIO_FOR_MASTERED = env.float("MASTERY_MIN_STRONG_RATIO_FOR_MASTERED", default=0.75)
+CONCEPT_FLAW_OCCURRENCE_THRESHOLD = env.int("CONCEPT_FLAW_OCCURRENCE_THRESHOLD", default=3)
 
 # --- Redis / Celery (Phase 6 ADR-4) ---
 REDIS_URL = env("REDIS_URL", default="redis://localhost:6379/0")
