@@ -22,9 +22,10 @@ class RegisterView(APIView):
         serializer = RegisterSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
+        email, phone = AuthService.resolve_identifier(serializer.validated_data["identifier"])
         user, _raw_code = AuthService.register(
-            email=serializer.validated_data.get("email"),
-            phone=serializer.validated_data.get("phone"),
+            email=email,
+            phone=phone,
             password=serializer.validated_data["password"],
         )
 
@@ -114,6 +115,15 @@ class RefreshView(APIView):
 
 
 class LogoutView(APIView):
+    """
+    FUNCTIONAL REQUIREMENT + UNDEFINED API CONTRACT — OWNER DECISION G5.
+    Phase 2 FLOW-AUTH-04 requires "Logout → Invalidate current session
+    token"; Phase 7 §4.1 has no dedicated AUTH-LOGOUT Contract ID. This
+    endpoint is the accepted functional implementation of that
+    requirement, not a documented Phase 7 contract. It revokes the
+    caller's current refresh token.
+    """
+
     permission_classes = [IsAuthenticated]
 
     def post(self, request):

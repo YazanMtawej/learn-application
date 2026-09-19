@@ -6,6 +6,8 @@ from datetime import timedelta
 
 import jwt
 from django.conf import settings
+from django.core.exceptions import ValidationError as DjangoValidationError
+from django.core.validators import validate_email
 from django.db import IntegrityError, transaction
 from django.db.models import Q
 from django.utils import timezone
@@ -43,19 +45,20 @@ class NotificationGateway:
     """
     Minimal development-mode notification gateway. Building a full
     Email/SMS provider integration is explicitly out of scope for TASK 1.
-    This stub satisfies FLOW-AUTH-01 ("إرسال كود تحقق") by making the
-    verification code observable via structured logging, without
-    introducing external infrastructure.
+    The raw verification code is never written to logs — a verification
+    code is a short-lived secret and must not appear in application logs.
+    Callers that need the raw code (e.g. tests) must use the return value
+    of AuthService.register(), not log output.
     """
 
     def send_verification_code(self, user: User, raw_code: str) -> None:
         import logging
 
         logger = logging.getLogger("apps.identity.notifications")
-        destination = user.email or user.phone
+        destination_kind = "email" if user.email else "phone"
         logger.info(
-            "Verification code issued: user_id=%s destination=%s code=%s",
-            user.id, destination, raw_code,
+            "Verification code issued: user_id=%s destination_kind=%s",
+            user.id, destination_kind,
         )
 
 
@@ -64,6 +67,24 @@ notification_gateway = NotificationGateway()
 
 class AuthService:
     """Application-layer authentication and account lifecycle logic (Phase 6 §5)."""
+
+    @staticmethod
+    def resolve_identifier(identifier: str):
+        """
+        ENGINEERING DECISION — ACCEPTABLE UNDER GAP (OWNER DECISION G3).
+        Phase 7 §4.1 names a single `identifier (email/phone)` field for
+        AUTH-REGISTER but no detection algorithm is documented anywhere
+        in Phase 0-17. This heuristic — treat as email if it validates
+        as one, otherwise treat as phone — is accepted as an engineering
+        resolution to that gap, not a documented project rule.
+
+        Returns (email, phone) with exactly one populated.
+        """
+        try:
+            validate_email(identifier)
+            return identifier, None
+        except DjangoValidationError:
+            return None, identifier
 
     @staticmethod
     def _identifier_exists(email, phone) -> bool:
@@ -169,6 +190,13 @@ class AuthService:
             raise AccountSuspendedError()
 
         if user.account_status == AccountStatus.UNVERIFIED:
+            # OWNER DECISION G4: generic INVALID_CREDENTIALS is the
+            # accepted behavior for unverified-account login attempts.
+            # Phase 4 §4 mandates "لا وصول قبل Verified" as an
+            # invariant; no Phase document defines a distinct error
+            # code for this case, so the existing generic
+            # credential-failure response satisfies the invariant
+            # without introducing an undocumented error code.
             raise InvalidCredentialsError()
 
         return user

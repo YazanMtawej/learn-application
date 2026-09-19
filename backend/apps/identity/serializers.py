@@ -6,16 +6,13 @@ from apps.identity.models import User
 
 
 class RegisterSerializer(serializers.Serializer):
-    email = serializers.EmailField(required=False, allow_blank=False)
-    phone = serializers.CharField(required=False, allow_blank=False, max_length=32)
-    password = serializers.CharField(write_only=True, min_length=8)
+    """
+    Request shape CONFIRMED against Phase 7 §4.1 AUTH-REGISTER:
+    "identifier (email/phone) + password" — a single unified field.
+    """
 
-    def validate(self, attrs):
-        if not attrs.get("email") and not attrs.get("phone"):
-            raise serializers.ValidationError(
-                "Either 'email' or 'phone' must be provided."
-            )
-        return attrs
+    identifier = serializers.CharField(required=True, allow_blank=False, max_length=254)
+    password = serializers.CharField(write_only=True, min_length=8)
 
     def validate_password(self, value):
         try:
@@ -26,6 +23,17 @@ class RegisterSerializer(serializers.Serializer):
 
 
 class VerifySerializer(serializers.Serializer):
+    """
+    UNCONFIRMED IMPLEMENTATION — OWNER DECISION G2. Phase 7 §4.1
+    documents AUTH-VERIFY as Auth: "None (verification token)",
+    Request: "code" only. The verification-credential mechanism itself
+    is not fully specified in any Phase document. Per explicit owner
+    decision, `user_id` is retained in the request body as the accepted
+    minimal resolution to this gap — not a documented Phase 7 contract
+    field, and not to be extended (no verification_token, no JWT, no
+    additional schema).
+    """
+
     user_id = serializers.UUIDField()
     code = serializers.CharField(max_length=16)
 

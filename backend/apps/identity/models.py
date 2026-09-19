@@ -30,9 +30,32 @@ class User(AbstractBaseUser):
     """
     Identity & Access — User entity.
     Schema reference: PHASE_8_DATABASE_DESIGN.md §4.1 `users` table.
+
+    Field provenance:
+    - id, email, phone, role, verification_status, account_status:
+      CONFIRMED — Phase 8 §4.1 `users` table, verbatim.
+    - password: CONFIRMED field concept (Phase 8 names the column
+      `password_hash`); the Django attribute name `password` is required
+      by AbstractBaseUser internals (set_password/check_password), so the
+      DB column is remapped via db_column to match the approved schema
+      exactly while keeping the attribute name Django expects.
+    - is_staff, last_login: NOT in Phase 8 schema. Required by Django's
+      auth/admin machinery given the choice to use AbstractBaseUser +
+      Django admin. Framework necessity, not a domain decision — never
+      exposed via any API contract.
+    - created_at, updated_at: NOT in Phase 8 schema for `users`
+      specifically. Kept as low-risk operational metadata, never exposed
+      via any API response. Not covered by owner decisions G1-G5; left
+      as a minor non-blocking addition.
     """
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+
+    # Django requires the attribute name "password" (AbstractBaseUser
+    # internals reference self.password directly). db_column remaps the
+    # actual database column to match Phase 8 §4.1 ("password_hash")
+    # exactly.
+    password = models.CharField(max_length=128, db_column="password_hash", verbose_name="password")
 
     email = models.EmailField(max_length=254, unique=True, null=True, blank=True)
     phone = models.CharField(max_length=32, unique=True, null=True, blank=True)
@@ -51,6 +74,7 @@ class User(AbstractBaseUser):
 
     # Django admin-site access control only — distinct from the platform
     # `role` field above, which drives application-level RBAC (Phase 6 §6).
+    # Not part of Phase 8 §4.1; required by Django's admin gating.
     is_staff = models.BooleanField(default=False)
 
     created_at = models.DateTimeField(auto_now_add=True)
@@ -116,9 +140,9 @@ class User(AbstractBaseUser):
 
 class RefreshToken(models.Model):
     """
-    Schema reference: PHASE_8_DATABASE_DESIGN.md §4.1 `refresh_tokens` table.
-    Stores only the SHA-256 hash of the raw refresh token — the raw value is
-    never persisted.
+    CONFIRMED — Phase 8 §4.1 `refresh_tokens` table, verbatim.
+    Stores only the SHA-256 hash of the raw refresh token — the raw value
+    is never persisted.
     """
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
@@ -146,11 +170,17 @@ class RefreshToken(models.Model):
 
 class VerificationCode(models.Model):
     """
-    Implementation-necessary addition beyond PHASE_8_DATABASE_DESIGN.md §4.1
-    (no verification-code table is defined in the approved schema). Required
-    to implement AUTH-VERIFY (Phase 7 §4.1 / FR-AUTH-001). Owned exclusively
-    by `identity`; stores only a hash of the code, never the raw value,
-    mirroring the RefreshToken hashing policy.
+    APPROVED — OWNER DECISION G1: minimal schema addition required to
+    implement already-approved verification behavior. Phase 1
+    FR-AUTH-001 and Phase 2 FLOW-AUTH-01 require verification-code
+    expiry and failed-attempt handling; Phase 7 §4.1 requires the
+    `VERIFICATION_CODE_EXPIRED` error case. Phase 8 §2/§4.1 does not
+    enumerate a persistence mechanism for this already-approved
+    behavior, so this table is the minimal addition needed to satisfy
+    it. Scope is intentionally limited to registration verification
+    only — not extended to password reset, MFA, or any other purpose.
+    Stores only a hash of the code, mirroring RefreshToken's hashing
+    policy; the raw code is never persisted.
     """
 
     class Purpose(models.TextChoices):
