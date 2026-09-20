@@ -31,6 +31,7 @@ INSTALLED_APPS = [
     "apps.execution",
     "apps.knowledge",
     "apps.adaptive",
+    "apps.ai_tutor",
 ]
 
 MIDDLEWARE = [
@@ -140,15 +141,24 @@ MASTERY_MIN_STRONG_RATIO_FOR_MASTERED = env.float("MASTERY_MIN_STRONG_RATIO_FOR_
 CONCEPT_FLAW_OCCURRENCE_THRESHOLD = env.int("CONCEPT_FLAW_OCCURRENCE_THRESHOLD", default=3)
 
 # --- Adaptive Engine (Phase 16 — provisional, see TASK 6) ---
-# ADAPTIVE_RULESET_VERSION: Phase 16 §20 — must change whenever Priority
-# Ladder / Eligibility Constraints / Candidate Generation logic changes.
 ADAPTIVE_RULESET_VERSION = env("ADAPTIVE_RULESET_VERSION", default="adaptive-ruleset-v1")
-# PREREQUISITE_GATE_MIN_STATE: DEFERRED threshold — Phase 15 P15-D5 /
-# Phase 16 P16-D4 explicitly leave "Proficient vs Mastered" unresolved.
-# "proficient" chosen as the lower (more permissive) of the two
-# documented candidates, pending an explicit owner decision — NOT
-# presented as a final product decision.
 PREREQUISITE_GATE_MIN_STATE = env("PREREQUISITE_GATE_MIN_STATE", default="proficient")
+
+# --- AI Tutor (Phase 10 — provisional, see TASK 7) ---
+# AI_PROVIDER_BACKEND="none" (default): no vendor configured yet
+# (Phase 12 P12-D2 explicitly unresolved) — provider always reports
+# unavailable, triggering the documented Fail-Soft fallback.
+AI_PROVIDER_BACKEND = env("AI_PROVIDER_BACKEND", default="none")
+AI_PROVIDER_HTTP_URL = env("AI_PROVIDER_HTTP_URL", default="")
+AI_PROVIDER_HTTP_TIMEOUT_SECONDS = env.int("AI_PROVIDER_HTTP_TIMEOUT_SECONDS", default=15)
+AI_PROVIDER_MODEL_VERSION = env("AI_PROVIDER_MODEL_VERSION", default="unconfigured")
+# Phase 10 P10-D14 — Regenerate limit explicitly deferred; provisional value.
+AI_REGENERATE_MAX_ATTEMPTS = env.int("AI_REGENERATE_MAX_ATTEMPTS", default=1)
+# Phase 10 P10-D13 — Solution Leakage threshold explicitly deferred; provisional value.
+AI_HINT_CODE_LINE_THRESHOLD = env.int("AI_HINT_CODE_LINE_THRESHOLD", default=3)
+AI_CONTEXT_MAX_CHARS = env.int("AI_CONTEXT_MAX_CHARS", default=6000)
+AI_CONTEXT_LESSON_EXCERPT_CHARS = env.int("AI_CONTEXT_LESSON_EXCERPT_CHARS", default=500)
+AI_CONTEXT_ERROR_HISTORY_LIMIT = env.int("AI_CONTEXT_ERROR_HISTORY_LIMIT", default=3)
 
 # --- Redis / Celery (Phase 6 ADR-4) ---
 REDIS_URL = env("REDIS_URL", default="redis://localhost:6379/0")
