@@ -33,6 +33,7 @@ INSTALLED_APPS = [
     "apps.adaptive",
     "apps.ai_tutor",
     "apps.review",
+    "apps.assessment",
 ]
 
 MIDDLEWARE = [
@@ -157,10 +158,6 @@ AI_CONTEXT_LESSON_EXCERPT_CHARS = env.int("AI_CONTEXT_LESSON_EXCERPT_CHARS", def
 AI_CONTEXT_ERROR_HISTORY_LIMIT = env.int("AI_CONTEXT_ERROR_HISTORY_LIMIT", default=3)
 
 # --- Review (Phase 17 — provisional, see TASK 8) ---
-# REVIEW_REQUIRE_ALL_ITEMS_PASS: ENGINEERING DECISION — Phase 17
-# §13/P17-D6 leaves the exact session-sufficiency threshold
-# undocumented; "all items must pass" is the minimal deterministic
-# rule, provisional and reversible.
 REVIEW_REQUIRE_ALL_ITEMS_PASS = env.bool("REVIEW_REQUIRE_ALL_ITEMS_PASS", default=True)
 
 # --- Redis / Celery (Phase 6 ADR-4) ---
